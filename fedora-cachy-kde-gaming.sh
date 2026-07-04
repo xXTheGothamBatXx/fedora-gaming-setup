@@ -5,32 +5,30 @@ echo "Updating Fedora..."
 sudo dnf upgrade --refresh -y
 
 echo "Installing repo tools..."
-sudo dnf install -y dnf-plugins-core fedora-workstation-repositories
+sudo dnf install -y dnf-plugins-core curl wget git nano
 
 echo "Installing RPM Fusion..."
 sudo dnf install -y \
 https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
 https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
 
-echo "Installing KDE with Wi-Fi and Bluetooth tray support..."
-sudo dnf install -y \
-sddm plasma-desktop plasma-workspace plasma-nm bluedevil \
-plasma-pa kde-gtk-config dolphin konsole kate ark spectacle gwenview \
-breeze-icon-theme kdeplasma-addons xdg-desktop-portal-kde \
-NetworkManager NetworkManager-wifi bluez bluez-tools pipewire wireplumber pavucontrol
+sudo dnf upgrade --refresh -y
 
-sudo systemctl enable NetworkManager --now
-sudo systemctl enable bluetooth --now
-sudo systemctl enable sddm --force
-sudo systemctl set-default graphical.target
+echo "Installing lean KDE desktop with Wi-Fi/Bluetooth tray support..."
+sudo dnf install -y \
+sddm plasma-desktop plasma-workspace plasma-nm bluedevil plasma-pa \
+kde-gtk-config kde-settings xdg-desktop-portal-kde kdeplasma-addons \
+breeze-icon-theme breeze-gtk dolphin konsole kate ark spectacle gwenview \
+NetworkManager NetworkManager-wifi bluez bluez-tools \
+pipewire pipewire-pulseaudio pipewire-alsa wireplumber pavucontrol
 
 echo "Installing gaming tools..."
 sudo dnf install -y \
-steam mangohud gamemode gamescope goverlay lutris heroic-games-launcher
+steam mangohud gamemode gamescope lutris heroic-games-launcher
 
 echo "Installing useful apps..."
 sudo dnf install -y \
-fastfetch btop mission-center nano git curl wget unzip p7zip p7zip-plugins
+fastfetch btop mission-center unzip p7zip p7zip-plugins
 
 echo "Installing codecs..."
 sudo dnf swap -y ffmpeg-free ffmpeg --allowerasing || true
@@ -49,7 +47,11 @@ echo "Installing CachyOS kernel..."
 sudo dnf copr enable -y bieszczaders/kernel-cachyos
 sudo dnf install -y kernel-cachyos kernel-cachyos-devel-matched
 
-echo "Enabling SSD trim..."
+echo "Enabling services..."
+sudo systemctl enable NetworkManager --now
+sudo systemctl enable bluetooth --now
+sudo systemctl enable sddm --force
+sudo systemctl set-default graphical.target
 sudo systemctl enable fstrim.timer
 
 echo "Disabling Wi-Fi power save..."
@@ -61,10 +63,10 @@ EOF
 
 sudo systemctl restart NetworkManager || true
 
-echo "Gaming file limits..."
+echo "Setting gaming file limits..."
 sudo tee /etc/security/limits.d/99-gaming.conf >/dev/null <<EOF
 @users soft nofile 1048576
 @users hard nofile 1048576
 EOF
 
-echo "Done. Reboot now."
+echo "Setup complete. Reboot now."
